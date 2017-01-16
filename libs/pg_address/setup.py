@@ -7,7 +7,7 @@ setup(
     description='SqlAlchemy type for pg_address postgres type',
     packages=['pg_address'],
     install_requires=[
-        'psycopg2==2.6.2',
-        'SQLAlchemy==1.1.4',
+        'psycopg2>=2.6.2',
+        'SQLAlchemy>=1.1.4',
     ],
 )
