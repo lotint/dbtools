@@ -1,0 +1,4 @@
+# postgresql address type
+comment = 'Extension creates composite type to store address'
+default_version = '0.0.1'
+relocatable = true
