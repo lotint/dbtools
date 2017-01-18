@@ -1,0 +1,4 @@
+# create partitions
+comment = 'Extension helps to create and mainatin partitions'
+default_version = '0.0.1'
+relocatable = true

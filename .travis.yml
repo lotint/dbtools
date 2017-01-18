@@ -15,6 +15,10 @@ install:
 before_script:
   - make -C pg_extensions/pg_address
   - sudo make -C pg_extensions/pg_address install
+
+  - make -C pg_extensions/partitions
+  - sudo make -C pg_extensions/partitions install
+
   - psql -d dbtools_test -c 'CREATE EXTENSION pg_address;'
   - (cd libs/pg_address && python setup.py install)
   - pip install nose
@@ -22,4 +26,8 @@ before_script:
 script:
   - make -C pg_extensions/pg_address test |& tee /tmp/pgaddress.log
   - "grep -q '^Result: PASS' /tmp/pgaddress.log"
+
+  - make -C pg_extensions/partitions test |& tee /tmp/partitions.log
+  - "grep -q '^Result: PASS' /tmp/partitions.log"
+
   - make -C libs/pg_address test
