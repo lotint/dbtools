@@ -27,7 +27,7 @@ script:
   - make -C pg_extensions/pg_address test |& tee /tmp/pgaddress.log
   - "grep -q '^Result: PASS' /tmp/pgaddress.log"
 
-  - make -C pg_extensions/partitions test |& tee /tmp/pgprovepartitions.log
+  - make -C pg_extensions/partitions test |& tee /tmp/partitions.log
   - "grep -q '^Result: PASS' /tmp/partitions.log"
 
   - make -C libs/pg_address test
