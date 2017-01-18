@@ -1,5 +1,7 @@
 
+import asyncio
 import psycopg2
+from psycopg2 import extras
 from sqlalchemy import event, types, func, cast
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql.expression import FunctionElement
@@ -9,9 +11,68 @@ from sqlalchemy.ext.compiler import compiles
 def register_type(engine):
     @event.listens_for(engine, 'connect')
     def receive_connect(dbapi_connection, connection_record):
-        psycopg2.extras.register_composite(
+        extras.register_composite(
             'pg_address',
             connection_record.connection
+        )
+
+
+@asyncio.coroutine
+def get_caster(name, conn):
+    cur = yield from conn.cursor()
+
+    # Use the correct schema
+    if '.' in name:
+        schema, tname = name.split('.', 1)
+    else:
+        tname = name
+        schema = 'public'
+
+    # column typarray not available before PG 8.3
+    typarray = conn.server_version >= 80300 and "typarray" or "NULL"
+
+    # get the type oid and attributes
+    yield from cur.execute("""\
+        SELECT t.oid, %s, attname, atttypid
+        FROM pg_type t
+        JOIN pg_namespace ns ON typnamespace = ns.oid
+        JOIN pg_attribute a ON attrelid = typrelid
+        WHERE typname = %%s AND nspname = %%s
+            AND attnum > 0 AND NOT attisdropped
+        ORDER BY attnum;
+    """ % typarray, (tname, schema))
+
+    recs = [rec for rec in (yield from cur.fetchall())]
+
+    if not recs:
+        raise psycopg2.ProgrammingError(
+            "PostgreSQL type '%s' not found" % name)
+
+    type_oid = recs[0][0]
+    array_oid = recs[0][1]
+    type_attrs = [(r[2], r[3]) for r in recs]
+
+    caster = extras.CompositeCaster(
+        tname, type_oid, type_attrs,
+        array_oid=array_oid, schema=schema)
+
+    class FactoryCaster(extras.CompositeCaster):
+
+        @classmethod
+        def _from_db(cls, name, conn):
+            return caster
+
+    return FactoryCaster
+
+
+def async_register_type(engine):
+    with (yield from engine) as conn:
+        factory = yield from get_caster('pg_address', conn._connection)
+        extras.register_composite(
+            'pg_address',
+            None,
+            globally=True,
+            factory=factory,
         )
 
 
