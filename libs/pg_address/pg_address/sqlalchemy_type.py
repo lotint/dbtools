@@ -1,6 +1,9 @@
 
 import psycopg2
-from sqlalchemy import event, types, func
+from sqlalchemy import event, types, func, cast
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.sql.expression import FunctionElement
+from sqlalchemy.ext.compiler import compiles
 
 
 def register_type(engine):
@@ -12,13 +15,18 @@ def register_type(engine):
         )
 
 
-class PgAddressType(types.UserDefinedType):
+class Array(FunctionElement):
+    name = 'array'
 
-    def get_col_spec(self, **kw):
-        return 'pg_address'
 
-    def bind_expression(self, bindvalue):
-        value = bindvalue.value
+@compiles(Array)
+def compile(element, compiler, **kw):
+    return 'ARRAY[%s]' % compiler.process(element.clauses)
+
+
+class PgAddressMixin:
+
+    def _process_dict(self, value, type_):
         return func.ROW(
             value.get('country'),
             value.get('region'),
@@ -26,8 +34,17 @@ class PgAddressType(types.UserDefinedType):
             value.get('zip_code'),
             value.get('street'),
             value.get('num'),
-            type_=self,
+            type_=type_
         )
+
+
+class PgAddressType(PgAddressMixin, types.UserDefinedType,):
+
+    def get_col_spec(self, **kw):
+        return 'pg_address'
+
+    def bind_expression(self, bindvalue):
+        return self._process_dict(bindvalue.value, self)
 
     def result_processor(self, dialect, coltype):
         def process(value):
@@ -39,4 +56,32 @@ class PgAddressType(types.UserDefinedType):
                 'street': value.street,
                 'num': value.num,
             }
+        return process
+
+
+class PgAddressArrayType(PgAddressMixin, ARRAY):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['item_type'] = PgAddressType
+        super().__init__(*args, **kwargs)
+
+    def get_col_spec(self, **kw):
+        return 'pg_address[]'
+
+    def bind_expression(self, bindvalue):
+        values = [
+            self._process_dict(item, self.item_type)
+            for item in bindvalue.value
+        ]
+        return cast(Array(*values, type_=self), self)
+
+    def result_processor(self, dialect, coltype):
+        item_proc = self.item_type.dialect_impl(dialect).\
+            result_processor(dialect, coltype)
+
+        def process(value):
+            return [
+                item_proc(item)
+                for item in value
+            ]
         return process

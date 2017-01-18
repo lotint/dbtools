@@ -4,7 +4,7 @@ import unittest
 
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer
 
-from pg_address import register_type, PgAddressType
+from pg_address import register_type, PgAddressType, PgAddressArrayType
 
 
 DB_URI = os.environ.get('DB_URI', 'postgresql://localhost/')
@@ -57,4 +57,41 @@ class TestPgAddress(unittest.TestCase):
                 'num': '44m,2',
                 'zip_code': '13597'
             }
+        )
+
+    def test_type_in_array(self):
+        table = Table(
+            'test_addrs', self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('addrs', PgAddressArrayType),
+        )
+        table.drop(bind=self.engine, checkfirst=True)
+        table.create(bind=self.engine)
+
+        iq = table.insert().values(
+            addrs=[{
+                'country': 'Germany',
+                'region': 'Reg1',
+                'city': 'Berlin',
+                'street': 'Str1',
+                'num': '44m,2',
+                'zip_code': '13597'
+            }]
+        )
+        self.engine.execute(iq)
+
+        sq = table.select()
+        cur = self.engine.execute(sq)
+        row = cur.fetchone()
+
+        self.assertEqual(
+            row['addrs'],
+            [{
+                'country': 'Germany',
+                'region': 'Reg1',
+                'city': 'Berlin',
+                'street': 'Str1',
+                'num': '44m,2',
+                'zip_code': '13597'
+            }]
         )
