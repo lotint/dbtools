@@ -1,6 +1,8 @@
 
-from .sqlalchemy_type import register_type, PgAddressType, PgAddressArrayType  # noqa
+from .sqlalchemy_type import (  # noqa
+    async_register_type, register_type, PgAddressType, PgAddressArrayType)
 
 __ALL__ = (
-    'register_type', 'PgAddressType', 'PgAddressArrayType'
+    'async_register_type', 'register_type', 'PgAddressType',
+    'PgAddressArrayType'
 )

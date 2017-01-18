@@ -1,5 +1,9 @@
 dist: trusty
 
+language: python
+python:
+  - 3.4
+
 addons:
   postgresql: "9.6"
 
@@ -7,13 +11,13 @@ install:
   - sudo apt-get install -qq postgresql-server-dev-9.6 postgresql-9.6-pgtap
   - psql -c 'CREATE DATABASE dbtools_test;'
   - psql -d dbtools_test -c 'CREATE EXTENSION pgtap;'
-  - psql -d dbtools_test -c 'CREATE EXTENSION pgtap;'
 
 before_script:
   - make -C pg_extensions/pg_address
   - sudo make -C pg_extensions/pg_address install
   - psql -d dbtools_test -c 'CREATE EXTENSION pg_address;'
-  - python libs/pg_address/setup.py install
+  - (cd libs/pg_address && python setup.py install)
+  - pip install nose
 
 script:
   - make -C pg_extensions/pg_address test |& tee /tmp/pgaddress.log
