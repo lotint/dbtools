@@ -24,6 +24,14 @@ class TestPgAddress(unittest.TestCase):
         self.tr.rollback()
 
     def test_type(self):
+        addr = {
+            'country': 'Germany',
+            'region': 'Reg1',
+            'city': 'Berlin',
+            'street': 'Str1',
+            'num': '44m,2',
+            'zip_code': '13597'
+        }
         table = Table(
             'test_addr', self.metadata,
             Column('id', Integer, primary_key=True),
@@ -32,33 +40,32 @@ class TestPgAddress(unittest.TestCase):
         table.drop(bind=self.engine, checkfirst=True)
         table.create(bind=self.engine)
 
-        iq = table.insert().values(
-            addr={
-                'country': 'Germany',
-                'region': 'Reg1',
-                'city': 'Berlin',
-                'street': 'Str1',
-                'num': '44m,2',
-                'zip_code': '13597'
-            }
-        )
+        iq = table.insert().values(addr=addr)
         self.engine.execute(iq)
 
         sq = table.select()
         cur = self.engine.execute(sq)
         row = cur.fetchone()
 
-        self.assertEqual(
-            row['addr'],
-            {
-                'country': 'Germany',
-                'region': 'Reg1',
-                'city': 'Berlin',
-                'street': 'Str1',
-                'num': '44m,2',
-                'zip_code': '13597'
-            }
+        self.assertEqual(row['addr'], addr)
+
+    def test_type_with_none(self):
+        table = Table(
+            'test_addr', self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('addr', PgAddressType),
         )
+        table.drop(bind=self.engine, checkfirst=True)
+        table.create(bind=self.engine)
+
+        iq = table.insert().values(addr=None)
+        self.engine.execute(iq)
+
+        sq = table.select()
+        cur = self.engine.execute(sq)
+        row = cur.fetchone()
+
+        self.assertIsNone(row['addr'])
 
     def test_type_in_array(self):
         addrs = [{
@@ -78,15 +85,30 @@ class TestPgAddress(unittest.TestCase):
         table.drop(bind=self.engine, checkfirst=True)
         table.create(bind=self.engine)
 
-        iq = table.insert().values(
-            addrs=addrs
-        )
+        iq = table.insert().values(addrs=addrs)
         self.engine.execute(iq)
 
         sq = table.select()
         cur = self.engine.execute(sq)
         row = cur.fetchone()
         self.assertEqual(row['addrs'], addrs)
+
+    def test_type_in_array_with_none(self):
+        table = Table(
+            'test_addrs', self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('addrs', PgAddressArrayType),
+        )
+        table.drop(bind=self.engine, checkfirst=True)
+        table.create(bind=self.engine)
+
+        iq = table.insert().values(addrs=None)
+        self.engine.execute(iq)
+
+        sq = table.select()
+        cur = self.engine.execute(sq)
+        row = cur.fetchone()
+        self.assertIsNone(row['addrs'])
 
     def test_raw_queries(self):
         addrs = [{

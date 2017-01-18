@@ -105,10 +105,14 @@ class PgAddressType(PgAddressMixin, types.UserDefinedType,):
         return 'pg_address'
 
     def bind_expression(self, bindvalue):
+        if bindvalue.value is None:
+            return bindvalue
         return self._process_dict(bindvalue.value, self)
 
     def result_processor(self, dialect, coltype):
         def process(value):
+            if value is None:
+                return None
             return {
                 'country': value.country,
                 'region': value.region,
@@ -130,6 +134,8 @@ class PgAddressArrayType(PgAddressMixin, ARRAY):
         return 'pg_address[]'
 
     def bind_expression(self, bindvalue):
+        if bindvalue.value is None:
+            return bindvalue
         values = [
             self._process_dict(item, self.item_type)
             for item in bindvalue.value
@@ -141,6 +147,8 @@ class PgAddressArrayType(PgAddressMixin, ARRAY):
             result_processor(dialect, coltype)
 
         def process(value):
+            if value is None:
+                return None
             return [
                 item_proc(item)
                 for item in value
