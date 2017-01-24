@@ -9,6 +9,18 @@ from sqlalchemy.ext.compiler import compiles
 
 
 def register_type(engine):
+    engine.dialect.ischema_names['pg_address'] = PgAddressType
+
+    _array = engine.dialect.ischema_names['_array']
+
+    def patch_array(coltype):
+        if isinstance(coltype, PgAddressType):
+            return PgAddressArrayType()
+        else:
+            return _array(coltype)
+
+    engine.dialect.ischema_names['_array'] = patch_array
+
     @event.listens_for(engine, 'connect')
     def receive_connect(dbapi_connection, connection_record):
         extras.register_composite(
