@@ -1,4 +1,6 @@
 
+.DEFAULT_GOAL := all
+
 EXTENSION = pg_address
 EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 
@@ -10,7 +12,7 @@ TEST_DATABASE = dbtools_test
 TEST_PORT = 5432
 
 
-build_all: sql/$(EXTENSION)--$(EXTVERSION).sql
+all: sql/$(EXTENSION)--$(EXTVERSION).sql
 
 
 test:
