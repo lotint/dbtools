@@ -38,7 +38,7 @@ $$ LANGUAGE SQL;
 
 BEGIN;
 
-SELECT plan(7 + 8 + 2);
+SELECT plan(7 + 12 + 2);
 
 -- check schema and simple insert
 SELECT set_up();
@@ -66,16 +66,20 @@ SELECT is(
 
 -- check insert of multiple values
 SELECT set_up();
-INSERT INTO items_weekly (title, created) VALUES ('row1', '2016-01-10'::timestamp), ('row2', '2016-01-20'::timestamp);
-INSERT INTO items_quarter (title, created) VALUES ('row1', '2016-01-10'::timestamp), ('row2', '2016-09-20'::timestamp);
-SELECT is((SELECT count(*) FROM items_weekly_p_2016_02)::int, 1);
-SELECT is((SELECT count(*) FROM items_weekly_p_2016_03)::int, 1);
-SELECT is((SELECT count(*) FROM items_quarter_p_2016_1)::int, 1);
-SELECT is((SELECT count(*) FROM items_quarter_p_2016_3)::int, 1);
-SELECT is((SELECT id FROM items_weekly_p_2016_02 WHERE title='row1'), 1);
-SELECT is((SELECT id FROM items_weekly_p_2016_03 WHERE title='row2'), 2);
-SELECT is((SELECT id FROM items_quarter_p_2016_1 WHERE title='row1'), 1);
-SELECT is((SELECT id FROM items_quarter_p_2016_3 WHERE title='row2'), 2);
+INSERT INTO items_weekly (title, created) VALUES ('row1', '2017-01-01'::timestamp), ('row2', '2017-01-07'::timestamp), ('row3', '2017-06-13'::timestamp), ('row4', '2017-06-17'::timestamp);
+INSERT INTO items_quarter (title, created) VALUES ('row1', '2017-04-01'::timestamp), ('row2', '2017-06-30'::timestamp), ('row3', '2017-02-21'::timestamp), ('row4', '2017-03-22'::timestamp);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_01)::int, 2);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_24)::int, 2);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_1)::int, 2);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_2)::int, 2);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_01 WHERE title='row1')::int, 1);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_01 WHERE title='row2')::int, 1);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_24 WHERE title='row3')::int, 1);
+SELECT is((SELECT count(*) FROM items_weekly_p_2017_24 WHERE title='row4')::int, 1);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_1 WHERE title='row3')::int, 1);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_1 WHERE title='row4')::int, 1);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_2 WHERE title='row1')::int, 1);
+SELECT is((SELECT count(*) FROM items_quarter_p_2017_2 WHERE title='row2')::int, 1);
 
 -- get master table constraint
 SELECT set_up();
