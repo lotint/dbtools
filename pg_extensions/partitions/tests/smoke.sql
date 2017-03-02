@@ -38,7 +38,7 @@ $$ LANGUAGE SQL;
 
 BEGIN;
 
-SELECT plan(7 + 12 + 2);
+SELECT plan(7 + 2 + 12 + 2);
 
 -- check schema and simple insert
 SELECT set_up();
@@ -62,6 +62,23 @@ SELECT is(
 SELECT is(
     (SELECT count(*) FROM items_quarter_p_2016_2)::int,
     1
+);
+
+-- check partition constraints
+SELECT set_up();
+INSERT INTO items_weekly (title, created) VALUES ('row1', '2017-01-01'::timestamp);
+INSERT INTO items_quarter (title, created) VALUES ('row1', '2017-01-01'::timestamp);
+PREPARE weekly_thrower AS INSERT INTO items_weekly_p_2017_01 (title, created) VALUES ('row_wrong', '2017-01-08');
+SELECT throws_ok(
+    'weekly_thrower',
+    '23514',
+    'new row for relation "items_weekly_p_2017_01" violates check constraint "items_weekly_p_2017_01_created_check"'
+);
+PREPARE quarter_thrower AS INSERT INTO items_quarter_p_2017_1 (title, created) VALUES ('row_wrong', '2017-04-08');
+SELECT throws_ok(
+    'quarter_thrower',
+    '23514',
+    'new row for relation "items_quarter_p_2017_1" violates check constraint "items_quarter_p_2017_1_created_check"'
 );
 
 -- check insert of multiple values
