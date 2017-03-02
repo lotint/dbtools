@@ -77,6 +77,12 @@ RETURNS void AS $$
 DECLARE
     _row_trigger_name text;
 BEGIN
+    IF NOT (_mask IN ('YYYY_Q', 'YYYY_WW')) THEN
+        RAISE EXCEPTION 'Not supported mask %', _mask
+            USING HINT = 'Correct masks: YYYY_WW, YYYY_Q',
+                  ERRCODE='invalid_parameter_value';
+    END IF;
+
     _row_trigger_name := format('trigget_row_%s', _master_table);
 
     EXECUTE format(
