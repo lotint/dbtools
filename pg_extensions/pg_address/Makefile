@@ -16,7 +16,7 @@ all: sql/$(EXTENSION)--$(EXTVERSION).sql
 
 
 test:
-	pg_prove -v -p $(TEST_PORT) -d $(TEST_DATABASE) tests/smoke.sql
+	pg_prove -p $(TEST_PORT) -d $(TEST_DATABASE) tests/smoke.sql
 
 
 sql/$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
