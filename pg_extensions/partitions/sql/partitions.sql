@@ -52,7 +52,7 @@ BEGIN
 
     CASE _mask
         WHEN 'YYYY_WW' THEN
-            SELECT EXTRACT (DOY FROM _current)::int / 7 + 1 INTO _start_dt;
+            SELECT date_trunc('year', _current) + make_interval(0, 0, EXTRACT (DOY FROM _current)::int / 7) INTO _start_dt;
             SELECT _start_dt + INTERVAL '7 days' INTO _end_dt;
         WHEN 'YYYY_Q' THEN
             SELECT date_trunc('quarter', _current) INTO _start_dt;
@@ -65,7 +65,7 @@ BEGIN
 
     EXECUTE format(
         'ALTER TABLE %I
-         ADD CHECK created >= %L AND created < %L
+         ADD CHECK (created >= %L AND created < %L)
          ;',
         _table_name, _start_dt, _end_dt
     );
