@@ -29,12 +29,7 @@ BEGIN
     END;
     
     IF _table_created THEN
-        EXECUTE format(
-            'ALTER TABLE %I
-             ADD CHECK (to_char(created, %L) = %L)
-             ;',
-            _table_name, _mask, to_char(_created, _mask)
-        );
+        PERFORM create_table_constraint(_table_name, _mask, _created);
         EXECUTE format(
             'ALTER TABLE %I
              INHERIT %I
@@ -46,11 +41,48 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+CREATE OR REPLACE FUNCTION create_table_constraint(_table_name name, _mask text, _create timestamp)
+RETURNS void AS $$
+DECLARE
+    _current date;
+    _start_dt date;
+    _end_dt date;
+BEGIN
+    SELECT _create::date INTO _current;
+
+    CASE _mask
+        WHEN 'YYYY_WW' THEN
+            SELECT date_trunc('year', _current) + make_interval(0, 0, EXTRACT (DOY FROM _current)::int / 7) INTO _start_dt;
+            SELECT _start_dt + INTERVAL '7 days' INTO _end_dt;
+        WHEN 'YYYY_Q' THEN
+            SELECT date_trunc('quarter', _current) INTO _start_dt;
+            SELECT date_trunc('quarter', _start_dt + INTERVAL '92 days') INTO _end_dt;
+        ELSE
+            RAISE EXCEPTION 'Not supported mask %', _mask
+                USING HINT = 'Correct masks: YYYY_WW, YYYY_Q',
+                      ERRCODE='invalid_parameter_value';
+    END CASE;
+
+    EXECUTE format(
+        'ALTER TABLE %I
+         ADD CHECK (created >= %L AND created < %L)
+         ;',
+        _table_name, _start_dt, _end_dt
+    );
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
 CREATE OR REPLACE FUNCTION init_partitions(_master_table name, _mask text)
 RETURNS void AS $$
 DECLARE
     _row_trigger_name text;
 BEGIN
+    IF NOT (_mask IN ('YYYY_Q', 'YYYY_WW')) THEN
+        RAISE EXCEPTION 'Not supported mask %', _mask
+            USING HINT = 'Correct masks: YYYY_WW, YYYY_Q',
+                  ERRCODE='invalid_parameter_value';
+    END IF;
+
     _row_trigger_name := format('trigget_row_%s', _master_table);
 
     EXECUTE format(
