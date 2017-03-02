@@ -42,7 +42,7 @@ SELECT plan(7 + 2 + 12 + 2);
 
 -- check schema and simple insert
 SELECT set_up();
-INSERT INTO items_weekly (title, created) VALUES ('row1', '2016-01-10'::timestamp);
+INSERT INTO items_weekly (title, created) VALUES ('row1', '2016-01-14'::timestamp);
 INSERT INTO items_quarter (title, created) VALUES ('row2', '2016-04-10'::timestamp);
 
 -- schema
