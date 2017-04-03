@@ -1,5 +1,0 @@
-TABLES = $(shell python dbdump.py $(DB))
-all: $(TABLES)
-$(TABLES):
-	@pg_dump -Fc -t $@ -d $(DB) -f pg_dumps/dir_$(DB)/$@.dump
-

@@ -21,7 +21,7 @@ def get_table_p_name(table, date):
 
 
 conn = psycopg2.connect(
-    'postgresql://lot_export:Mi0gaoyM3o@halle-auto.lotserver.de:54322/{}'.format(db))
+    'postgresql://lot_export:Mi0gaoyM3o@localhost:5432/{}'.format(db))
 
 cur = conn.cursor()
 
@@ -64,7 +64,7 @@ for table in partition_table_diff:
         table_to_backup.add(part_table)
 
 
-print(' -t '.join(table_to_backup))
+print(' '.join(table_to_backup))
 
 cur.close()
 conn.close()
