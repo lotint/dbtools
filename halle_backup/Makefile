@@ -3,7 +3,9 @@ CREADER = $(CURPATH)/read_config.py
 DBS = $(shell python $(CREADER) sections $(CURPATH)/databases.yml)
 all: $(DBS)
 $(DBS): % : dir_%
-	@for i in $(shell python dbdump.py $@); do \
+	@psql -d $@ -f get_backup_tables.sql
+	for i in $(shell psql -d $@ -c "SELECT schemaname || '.' || relname FROM backup.get_tables()" -t); do \
+		psql -d $@ -c "SELECT backup.save_state($$i)"; \
 		pg_dump -Fc -t $$i -d $@ -f pg_dumps/dir_$@/$$i.dump; \
 		done
 dir_%:
