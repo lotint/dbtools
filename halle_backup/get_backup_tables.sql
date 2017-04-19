@@ -1,34 +1,31 @@
-
 CREATE SCHEMA IF NOT EXISTS backup;
 CREATE TABLE IF NOT EXISTS backup.status (
-    schemaname name,
-    relname name,
+    table_name text,
     n_tup_ins bigint,
     n_tup_upd bigint,
     n_tup_del bigint,
     n_tup_hot_upd bigint,
     dt timestamp,
-    CONSTRAINT backup_status_pk PRIMARY KEY (schemaname, relname) 
+    CONSTRAINT backup_status_pk PRIMARY KEY (table_name) 
 );
 
 CREATE OR REPLACE FUNCTION backup.get_tables()
-RETURNS TABLE(schemaname name, relname name) AS
+RETURNS TABLE(table_name text) AS
 $$
-    SELECT pst.schemaname, pst.relname 
+    SELECT pst.schemaname || '.' || pst.relname 
     FROM pg_stat_user_tables pst
     LEFT JOIN backup.status st ON (
-        st.schemaname = pst.schemaname AND
-        st.relname = pst.relname
+        st.table_name = pst.schemaname || '.' || pst.relname
     )
     WHERE
-        st.schemaname IS NULL OR
+        st.table_name IS NULL OR
         pst.n_tup_ins != st.n_tup_ins OR
         pst.n_tup_upd != st.n_tup_upd OR
         pst.n_tup_del != st.n_tup_del OR
         pst.n_tup_hot_upd != st.n_tup_hot_upd;
 $$ LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION backup.save_state(schemaname_ name, relname_ name)
+CREATE OR REPLACE FUNCTION backup.save_state(table_name_ text)
 RETURNS VOID AS
 $$
 DECLARE 
@@ -36,12 +33,11 @@ DECLARE
 BEGIN
     SELECT * INTO st_
     FROM pg_stat_user_tables
-    WHERE schemaname = schemaname_ AND relname=relname_;
+    WHERE schemaname || '.' || relname = table_name_;
 
     INSERT INTO backup.status AS st
     VALUES (
-        st_.schemaname,
-        st_.relname,
+        st_.schemaname || '.' || st_.relname,
         st_.n_tup_ins,
         st_.n_tup_upd,
         st_.n_tup_del,
@@ -55,6 +51,6 @@ BEGIN
         n_tup_del = st_.n_tup_del,
         n_tup_hot_upd = st_.n_tup_hot_upd
     WHERE
-        st.schemaname = schemaname_ AND st.relname=relname_;
+        st.table_name = table_name_;
 END 
 $$ LANGUAGE PLPGSQL;
