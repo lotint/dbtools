@@ -7,10 +7,14 @@ ifndef FOLDER
 FOLDER = pg_dump
 endif
 
+ifndef NDAYS
+NDAYS = 10
+endif
+
 all: prepare $(DBS)
 	tar -c tmp/ > ./$(FOLDER)/$(TODAY).tar
 	rm -rf ./tmp
-	find ./$(FOLDER) -mtime +10 -exec rm {} \;
+	find ./$(FOLDER) -mtime +$(NDAYS) -exec rm {} \;
 .env:
 	virtualenv -p python3 .env
 prepare: .env
