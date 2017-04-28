@@ -1,6 +1,9 @@
+.DEFAULT_GOAL := upload
+
 CURPATH = $(shell pwd)
 CREADER = $(CURPATH)/read_config.py
 DBS = $(shell .env/bin/python $(CREADER) sections $(CURPATH)/databases.yml)
+FTP_URI = ftp://u146710:3ojBx2zbPcWCj3tw@u146710.your-storagebox.de
 TODAY = $(shell date +'%Y_%m_%d')
 
 ifndef FOLDER
@@ -11,8 +14,8 @@ ifndef NDAYS
 NDAYS = 10
 endif
 
-all: dump
-	lftp -e 'mirror -c -R ./$(FOLDER) test_dump/$(FOLDER); bye;' ftp://u146710:3ojBx2zbPcWCj3tw@u146710.your-storagebox.de
+upload: dump
+	lftp -e 'mirror -c -R ./$(FOLDER) test_dump/$(FOLDER); bye;' $(FTP_URI)
 dump: prepare $(DBS)
 	tar -c tmp/ > ./$(FOLDER)/$(TODAY).tar
 	rm -rf ./tmp
