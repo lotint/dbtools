@@ -14,7 +14,8 @@ endif
 all: prepare $(DBS)
 	tar -c tmp/ > ./$(FOLDER)/$(TODAY).tar
 	rm -rf ./tmp
-	find ./$(FOLDER) -mtime +$(NDAYS) -exec rm {} \;
+	find ./$(FOLDER) -mtime +$(NDAYS) -delete
+	lftp -e 'mirror -c -R ./$(FOLDER) test_dump/$(FOLDER); bye;' ftp://u146710:3ojBx2zbPcWCj3tw@u146710.your-storagebox.de
 .env:
 	virtualenv -p python3 .env
 prepare: .env
