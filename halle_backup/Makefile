@@ -26,10 +26,11 @@ prepare: .env
 	.env/bin/pip install -r requirements.txt
 	mkdir -p ./$(FOLDER)
 $(DBS): % : dir_%
+	$(eval PORT := $(shell .env/bin/python $(CREADER) get $@ port $(CURPATH)/databases.yml))
 	psql -d $@ -f get_backup_tables.sql
 	for i in $(shell psql -d $@ -c "SELECT * FROM backup.get_tables()" -t); do \
-		psql -d $@ -c "SELECT backup.save_state('$$i')"; \
-		pg_dump -Fc -t $$i -d $@ -f tmp/dir_$@/$$i.dump; \
+		psql -d $@ -p $(PORT) -c "SELECT backup.save_state('$$i')"; \
+		pg_dump -Fc -t $$i -d $@ -p $(PORT) -f tmp/dir_$@/$$i.dump; \
 		done
 dir_%:
 	mkdir -p tmp/$@
