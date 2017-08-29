@@ -7,9 +7,5 @@ CREATE TYPE pg_address AS (
     city VARCHAR(255),
     zip_code VARCHAR(255),
     street TEXT,
-    num VARCHAR(255),
-    -- added in 0.0.3
-    suburb VARCHAR(255),
-    lat DOUBLE PRECISION,
-    lon DOUBLE PRECISION
+    num VARCHAR(255)
 );

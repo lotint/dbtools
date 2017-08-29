@@ -1,5 +1,4 @@
 
-import asyncio
 import psycopg2
 from psycopg2 import extras
 from sqlalchemy import event, types, func, cast
@@ -29,9 +28,8 @@ def register_type(engine):
         )
 
 
-@asyncio.coroutine
-def get_caster(name, conn):
-    cur = yield from conn.cursor()
+async def get_caster(name, conn):
+    cur = await conn.cursor()
 
     # Use the correct schema
     if '.' in name:
@@ -44,7 +42,7 @@ def get_caster(name, conn):
     typarray = conn.server_version >= 80300 and "typarray" or "NULL"
 
     # get the type oid and attributes
-    yield from cur.execute("""\
+    await cur.execute("""\
         SELECT t.oid, %s, attname, atttypid
         FROM pg_type t
         JOIN pg_namespace ns ON typnamespace = ns.oid
@@ -54,7 +52,7 @@ def get_caster(name, conn):
         ORDER BY attnum;
     """ % typarray, (tname, schema))
 
-    recs = [rec for rec in (yield from cur.fetchall())]
+    recs = [rec for rec in (await cur.fetchall())]
 
     if not recs:
         raise psycopg2.ProgrammingError(
@@ -77,9 +75,9 @@ def get_caster(name, conn):
     return FactoryCaster
 
 
-def async_register_type(engine):
-    with (yield from engine) as conn:
-        factory = yield from get_caster('pg_address', conn._connection)
+async def async_register_type(engine):
+    async with engine.acquire() as conn:
+        factory = await get_caster('pg_address', conn._connection)
         extras.register_composite(
             'pg_address',
             None,
@@ -107,6 +105,9 @@ class PgAddressMixin:
             value.get('zip_code'),
             value.get('street'),
             value.get('num'),
+            value.get('suburb'),
+            value.get('lat'),
+            value.get('lon'),
             type_=type_
         )
 
@@ -132,6 +133,9 @@ class PgAddressType(PgAddressMixin, types.UserDefinedType,):
                 'city': value.city,
                 'street': value.street,
                 'num': value.num,
+                'suburb': value.suburb,
+                'lat': value.lat,
+                'lon': value.lon,
             }
         return process
 
