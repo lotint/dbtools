@@ -2,7 +2,7 @@ dist: trusty
 
 language: python
 python:
-  - 3.4
+  - 3.5
 
 addons:
   postgresql: "9.6"
@@ -24,10 +24,6 @@ before_script:
   - pip install nose
 
 script:
-  - make -C pg_extensions/pg_address test |& tee /tmp/pgaddress.log
-  - "grep -q '^Result: PASS' /tmp/pgaddress.log"
-
-  - make -C pg_extensions/partitions test |& tee /tmp/partitions.log
-  - "grep -q '^Result: PASS' /tmp/partitions.log"
-
+  - make -C pg_extensions/pg_address test
+  - make -C pg_extensions/partitions test
   - make -C libs/pg_address test
