@@ -30,7 +30,10 @@ class TestPgAddress(unittest.TestCase):
             'city': 'Berlin',
             'street': 'Str1',
             'num': '44m,2',
-            'zip_code': '13597'
+            'zip_code': '13597',
+            'suburb': 'Sub',
+            'lat': 52.13,
+            'lon': 12.2,
         }
         table = Table(
             'test_addr', self.metadata,
@@ -74,7 +77,10 @@ class TestPgAddress(unittest.TestCase):
             'city': 'Berlin',
             'street': 'Str1',
             'num': '44m,2',
-            'zip_code': '13597'
+            'zip_code': '13597',
+            'suburb': 'Sub',
+            'lat': 52.13,
+            'lon': 12.2,
         }]
 
         table = Table(
@@ -117,7 +123,10 @@ class TestPgAddress(unittest.TestCase):
             'city': 'Berlin',
             'street': 'Str1',
             'num': '44m,2',
-            'zip_code': '13597'
+            'zip_code': '13597',
+            'suburb': 'Sub',
+            'lat': 52.13,
+            'lon': 12.2,
         }]
         table = Table(
             'test_addrs', self.metadata,

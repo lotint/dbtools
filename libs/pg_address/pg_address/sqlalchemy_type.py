@@ -107,6 +107,9 @@ class PgAddressMixin:
             value.get('zip_code'),
             value.get('street'),
             value.get('num'),
+            value.get('suburb'),
+            value.get('lat'),
+            value.get('lon'),
             type_=type_
         )
 
@@ -132,6 +135,9 @@ class PgAddressType(PgAddressMixin, types.UserDefinedType,):
                 'city': value.city,
                 'street': value.street,
                 'num': value.num,
+                'suburb': value.suburb,
+                'lat': value.lat,
+                'lon': value.lon,
             }
         return process
 

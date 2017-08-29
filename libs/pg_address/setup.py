@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='pg_address',
-    version='0.0.1',
+    version='0.0.3',
     description='SqlAlchemy type for pg_address postgres type',
     packages=['pg_address'],
     install_requires=[
