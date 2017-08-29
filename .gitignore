@@ -1,5 +1,6 @@
 __pycache__
-*--*.sql
+pg_address--0.0.3.sql
+partitions--0.0.2.sql
 build
 dist
 *.egg-info
