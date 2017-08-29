@@ -7,6 +7,13 @@
 3. Go to folder `pg_extensions/pg_address` (current folder) and run `make install`
 
 ## How to enable this extension in db
+
+```sql
+CREATE EXTENSION pg_address;
 ```
-CREATE EXTENSIO pg_address;
+
+## How to update extension to new version
+
+```sql
+ALTER EXTENSION pg_extension UPDATE;
 ```
