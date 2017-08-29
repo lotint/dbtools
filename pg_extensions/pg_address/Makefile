@@ -4,7 +4,7 @@
 EXTENSION = pg_address
 EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 
-DATA = sql/$(EXTENSION)--$(EXTVERSION).sql sql/$(EXTENSION)--0.0.2--0.0.3.sql
+DATA = sql/$(EXTENSION)--$(EXTVERSION).sql sql/$(EXTENSION)--0.0.1--0.0.2.sql sql/$(EXTENSION)--0.0.2--0.0.3.sql
 EXTRA_CLEAN = sql/$(EXTENSION)--$(EXTVERSION).sql
 
 
